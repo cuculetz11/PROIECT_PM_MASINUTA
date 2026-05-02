@@ -37,7 +37,7 @@ The ATmega328P is the brain of the system. Everything connects to it.
 
 ### Block Diagram
 
-![Land Buster System Block Diagram](documentatie/block_diagram.png)
+![Land Buster System Block Diagram](hardware/block_diagram.png)
 
 ---
 
@@ -91,7 +91,7 @@ The ATmega328P is the brain of the system. Everything connects to it.
 
 ### Electrical Schematic
 
-![Land Buster Electrical Schematic](documentatie/electrical_schematic.png)
+![Land Buster Electrical Schematic](hardware/electrical_schematic.png)
 
 ---
 
