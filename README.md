@@ -87,7 +87,7 @@ The ATmega328P is the brain of the system. Everything connects to it.
 
 **Two separate motor drivers:** The 390 traction motor needs high current at 7.4V, so it uses the ESC. The small steering motor runs at 3–6V and is controlled by the L298N, which is perfect for low-power direction switching.
 
-**Modular connectors:** All wires between boards use JST connectors and terminal blocks — no loose dupont wires. This keeps wiring clean and prevents connections from shaking loose during movement.
+**Modular Hardware Implementation:** To ensure a clean and reliable hardware execution, the system utilizes a modular wiring setup consisting of male-female and female-female jumpers organized through 2-pin, 3-pin, and 5-pin connectors and terminal blocks, preventing any connections from shaking loose during rover movement.
 
 ### Electrical Schematic
 
@@ -315,15 +315,5 @@ Final assembly & testing                                          ███
 | PlatformIO + VS Code | Writing and uploading firmware |
 | avr-gcc + avr-size | Compiling and checking memory |
 | Serial Bluetooth Terminal (Android) | Sending commands from phone |
-| Oscilloscope | Verifying PWM signals |
 
-### Course Materials
 
-| Document | Source |
-|---|---|
-| Lab 1 — USART | CS Open CourseWare, UPB |
-| Lab 2 — Timers & Interrupts | CS Open CourseWare, UPB |
-| Lab 3 — PWM | CS Open CourseWare, UPB |
-| Lab 4 — ADC | CS Open CourseWare, UPB |
-| Lab 6 — I2C | CS Open CourseWare, UPB |
-| Notare si evaluare proiecte | PM Course, UPB |
