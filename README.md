@@ -22,8 +22,8 @@ The main idea was simple: a normal RC car does whatever you tell it, even if it 
 **Why it is useful:** It shows how a cheap microcontroller can handle multiple real-time tasks at once — wireless communication, sensing, motor control, and display — using only hardware registers and no external libraries.
 
 **Course requirements met:**
-- ✅ **5 laboratory concepts:** USART (Lab 1), Timers & Interrupts (Lab 2), PWM (Lab 3), ADC (Lab 4), I2C (Lab 6)
-- ✅ **5 external peripherals:** HC-05 Bluetooth, HC-SR04 Ultrasonic, 1602 I2C LCD, Photoresistor, Active Buzzer
+- **5 laboratory concepts:** USART (Lab 1), Timers & Interrupts (Lab 2), PWM (Lab 3), ADC (Lab 4), I2C (Lab 6)
+- **5 external peripherals:** HC-05 Bluetooth, HC-SR04 Ultrasonic, 1602 I2C LCD, Photoresistor, Active Buzzer
 
 ---
 
@@ -219,6 +219,7 @@ uint16_t myAnalogRead(uint8_t channel) {
 > *"Using hardware interrupts for Bluetooth and hardware timers for distance will keep response time under 100ms — even while the LCD is updating."*
 
 ### Metrics & Targets
+VEDEM
 
 | What | Target | How |
 |---|---|---|
@@ -235,13 +236,7 @@ uint16_t myAnalogRead(uint8_t channel) {
 
 **Planned extra:** Rear HC-SR04 for reverse parking assist.
 
-### Code Profiling
 
-1. **USART ✅** — Commands received via ISR, MCU echoes back correctly.
-2. **ADC ✅** — Returns ~24 (bright) / ~1000 (dark), voltage divider confirmed.
-3. **Ultrasonic ✅** — Distance verified against ruler.
-4. **PWM ✅** — Signal verified on oscilloscope, direction pins correct.
-5. **Integration** — In progress. `avr-size` used to monitor SRAM usage (limit: 2KB).
 
 ---
 
@@ -249,15 +244,15 @@ uint16_t myAnalogRead(uint8_t channel) {
 
 | Feature | Status |
 |---|---|
-| Bluetooth command reception | ✅ Tested |
-| ADC light reading | ✅ Tested |
-| Ultrasonic distance | ✅ Tested |
-| PWM steering (L298N) | 🔄 In progress |
-| Speed modes via ESC | 🔄 In progress |
-| Progressive buzzer | 🔄 In progress |
-| Emergency brake at 15cm | 🔄 In progress |
-| I2C LCD telemetry | 🔄 In progress |
-| Automatic headlights | 🔄 In progress |
+| Bluetooth command reception | Tested |
+| ADC light reading | Tested |
+| Ultrasonic distance | Tested |
+| PWM steering (L298N) | In progress |
+| Speed modes via ESC | In progress |
+| Progressive buzzer | In progress |
+| Emergency brake at 15cm | In progress |
+| I2C LCD telemetry | In progress |
+| Automatic headlights | In progress |
 
 ---
 
@@ -277,11 +272,11 @@ Key lessons:
 ```
 Task                              W1  W2  W3  W4  W5  W6  W7  W8  W9
 ──────────────────────────────────────────────────────────────────────
-Planning & chassis setup          ███ ███
-Validate USART, ADC, Ultrasonic           ███ ███
-PWM speed & steering control                      ███ ███
-I2C LCD + emergency brake logic                           ███ ███
-Final assembly & testing                                          ███
+Planning & chassis setup          xxx xxx
+Validate USART, ADC, Ultrasonic           xxx xxx
+PWM speed & steering control                      xxx xxx
+I2C LCD + emergency brake logic                           xxx xxx
+Final assembly & testing                                          xxx
 ```
 
 | Phase | Weeks | Goal |
