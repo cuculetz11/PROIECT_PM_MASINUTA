@@ -1,0 +1,3 @@
+Plotted to '/home/cuculet/Documents/pm/PROIECT_PDF/proeict_masina/kicad/kicad.pdf'.
+
+Info: Done.
