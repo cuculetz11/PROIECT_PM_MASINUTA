@@ -1,0 +1,69 @@
+digraph BlockDiagram {
+    rankdir=LR;
+    node [shape=box, style=filled, fillcolor=lightblue, fontname="Helvetica", fontsize=12, margin=0.2];
+    edge [fontname="Helvetica", fontsize=10, color="#555555"];
+    bgcolor="white";
+
+    // MCU
+    MCU [label="ATmega328P\nXplained Mini\n(Microcontroller)", fillcolor="#FFD700", shape=Mrecord, penwidth=2];
+
+    // Inputs
+    subgraph cluster_inputs {
+        label="Sensors & Inputs";
+        style=dashed;
+        color="#888888";
+        fontname="Helvetica-Bold";
+        
+        BT [label="HC-05\nBluetooth Module", fillcolor="#E0F7FA"];
+        FrontSonar [label="HC-SR04\nFront Sonar", fillcolor="#E0F7FA"];
+        RearSonar [label="HC-SR04\nRear Sonar", fillcolor="#E0F7FA"];
+        LDR [label="LDR + 10kΩ\nLight Sensor", fillcolor="#E0F7FA"];
+    }
+
+    // Outputs
+    subgraph cluster_outputs {
+        label="Actuators & Outputs";
+        style=dashed;
+        color="#888888";
+        fontname="Helvetica-Bold";
+        
+        L298N [label="L298N Motor Driver\n(Steering)", fillcolor="#FFCDD2"];
+        ESC [label="20A Brushed ESC\n(Traction)", fillcolor="#FFCDD2"];
+        LCD [label="1602 LCD + I2C", fillcolor="#FFCDD2"];
+        Buzzer [label="Active Buzzer", fillcolor="#FFCDD2"];
+        Headlights [label="Headlights\n(2x LED)", fillcolor="#FFF9C4"];
+        Taillights [label="Taillights\n(2x LED)", fillcolor="#FFCDD2"];
+    }
+
+    // Power
+    subgraph cluster_power {
+        label="Power Supply";
+        style=dashed;
+        color="#888888";
+        fontname="Helvetica-Bold";
+        
+        Bat1 [label="Battery 1 (7.4V)\nLogic Rail", fillcolor="#C8E6C9"];
+        Bat2 [label="Battery 2 (7.4V)\nTraction Rail", fillcolor="#C8E6C9"];
+        LM2596 [label="LM2596 Step-Down\n(5V Regulator)", fillcolor="#F5F5F5"];
+    }
+
+    // Input Connections
+    BT -> MCU [label=" TX -> D0\n RX <- D1\n STATE -> A1", dir=both, color="blue"];
+    FrontSonar -> MCU [label=" Echo -> D3\n Trig <- D2", dir=both, color="blue"];
+    RearSonar -> MCU [label=" Echo -> D5\n Trig <- D4", dir=both, color="blue"];
+    LDR -> MCU [label=" Analog -> A0", color="orange"];
+
+    // Output Connections
+    MCU -> L298N [label=" D6 (ENA)\n D8 (IN1), D9 (IN2)", color="darkgreen"];
+    MCU -> ESC [label=" D10 (PWM)", color="darkgreen"];
+    MCU -> LCD [label=" A4 (SDA)\n A5 (SCL)", dir=both, color="purple"];
+    MCU -> Buzzer [label=" A2", color="darkgreen"];
+    MCU -> Headlights [label=" D7", color="darkgreen"];
+    MCU -> Taillights [label=" A3", color="darkgreen"];
+
+    // Power Connections
+    Bat1 -> LM2596 [label=" 7.4V", color="red", fontcolor="red"];
+    Bat1 -> L298N [label=" 7.4V (Motor)", color="red", fontcolor="red"];
+    LM2596 -> MCU [label=" 5V", color="red", fontcolor="red"];
+    Bat2 -> ESC [label=" 7.4V (High Current)", color="red", fontcolor="red"];
+}

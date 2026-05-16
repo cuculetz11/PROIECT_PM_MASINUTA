@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1E1E1E"
+    android:padding="16dp">
+    <!-- TELEMETRIE SUS -->
+    <TextView
+        android:id="@+id/tvFata"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Distanță Față: -- cm"
+        android:textColor="#00FF00"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tvSpate" />
+    <TextView
+        android:id="@+id/tvSpate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Distanță Spate: -- cm"
+        android:textColor="#00FF00"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvFata"
+        app:layout_constraintEnd_toEndOf="parent" />
+    <!-- D-PAD STÂNGA -->
+    <Button
+        android:id="@+id/btnUp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="W"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/btnDown"
+        app:layout_constraintStart_toStartOf="@+id/btnDown"
+        app:layout_constraintEnd_toEndOf="@+id/btnDown" />
+    <Button
+        android:id="@+id/btnDown"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="S"
+        android:textSize="24sp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="96dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <Button
+        android:id="@+id/btnLeft"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="A"
+        android:textSize="24sp"
+        app:layout_constraintRight_toLeftOf="@+id/btnDown"
+        app:layout_constraintBottom_toBottomOf="@+id/btnDown" />
+    <Button
+        android:id="@+id/btnRight"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="D"
+        android:textSize="24sp"
+        app:layout_constraintLeft_toRightOf="@+id/btnDown"
+        app:layout_constraintBottom_toBottomOf="@+id/btnDown" />
+    <!-- CENTRU: ACCESORII -->
+    <Button
+        android:id="@+id/btnHorn"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:text="CLAXON"
+        android:backgroundTint="#FF9800"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="32dp" />
+    <ToggleButton
+        android:id="@+id/btnLights"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:textOn="FARURI"
+        android:textOff="FARURI"
+        android:backgroundTint="#2196F3"
+        app:layout_constraintBottom_toTopOf="@+id/btnHorn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp" />
+    <!-- DREAPTA: VITEZE & TURBO -->
+    <TextView
+        android:id="@+id/tvSpeed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Viteză: 1"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/sbSpeed"
+        app:layout_constraintEnd_toEndOf="@+id/sbSpeed"
+        app:layout_constraintStart_toStartOf="@+id/sbSpeed" />
+    <SeekBar
+        android:id="@+id/sbSpeed"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:max="2"
+        android:progress="0"
+        app:layout_constraintBottom_toTopOf="@+id/btnTurbo"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp" />
+    <Button
+        android:id="@+id/btnTurbo"
+        android:layout_width="120dp"
+        android:layout_height="80dp"
+        android:text="TURBO"
+        android:backgroundTint="#F44336"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="72dp"
+        android:layout_marginBottom="16dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

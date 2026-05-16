@@ -37,61 +37,94 @@ The ATmega328P is the brain of the system. Everything connects to it.
 
 ### Block Diagram
 
-![Land Buster System Block Diagram](hardware/block_diagram.png)
+![Land Buster System Block Diagram](hardware/block_diagram.jpg)
 
 ---
 
 ## Hardware Design
 
-### Component List
+### Components and Their Role
 
-| Component | Model | Role |
+| Component | Model | Role in Project |
 |---|---|---|
-| Microcontroller | ATmega328P Xplained Mini | Main brain |
-| Bluetooth | HC-05 | Receives phone commands |
-| Ultrasonic Sensor | HC-SR04 | Measures front distance |
-| Light Sensor | GL5528 Photoresistor | Measures ambient light |
-| Speed Controller | 20A Brushed ESC | Controls traction motor |
-| Traction Motor | 390 DC Motor (7.4V) | Moves the car forward/backward |
-| Steering Motor | 3–6V DC Motor | Turns left/right |
-| Motor Driver | L298N H-Bridge | Drives the steering motor |
-| Display | 1602 LCD + PCF8574 I2C | Shows speed mode and distance |
-| Buzzer | 5V Active Buzzer | Proximity beep and horn |
-| Headlights | 5mm LEDs x2 | Automatic lighting |
-| Voltage Regulator | LM2596 Step-Down | Converts 7.4V to 5V for logic |
-| Battery | 2x 18650 Li-Ion | Power source (7.4V) |
-| Chassis | Land Buster 1/12 scale | Physical base |
-| Connectors | JST 2/3/5-pin + terminal blocks | Clean and safe wiring |
+| Microcontroller | ATmega328P Xplained Mini | Central brain. Reads all sensors, runs non-blocking logic, outputs PWM and I2C signals. |
+| Bluetooth Module | HC-05 | Bidirectional telemetry with Android app - receives drive commands, sends sensor data. |
+| Front Ultrasonic Sensor | HC-SR04 | Measures distance to obstacles ahead. Triggers buzzer alerts and emergency stop at <15 cm. |
+| Rear Ultrasonic Sensor | HC-SR04 | Measures distance behind the rover. Powers the reverse parking assist display on the LCD. |
+| Light Sensor | GL5528 Photoresistor + 10kΩ | Voltage divider read by ADC. Activates headlights automatically when ambient light drops. |
+| Speed Controller | 20A Brushed ESC | Controls the rear 390 DC traction motor via 50 Hz PWM. Receives signal from MCU Timer 1. |
+| Traction Motor | 390 DC Motor (7.4V) | Drives the rover forward and backward from Battery 2's dedicated high-current rail. |
+| Steering Motor | 3–6V DC Motor | Turns the front axle left or right under L298N control. |
+| Motor Driver | L298N H-Bridge | Accepts PWM (ENA) and two direction pins (IN1/IN2) to drive the steering DC motor. |
+| LCD Display | 1602 LCD + PCF8574 I2C | "Smart dashboard": shows expressive animated eyes in normal mode, parking assist in reverse. |
+| Active Buzzer | TMB12A05 5V | Proximity alert (beep rate increases near obstacles) and horn command from phone. |
+| Headlights & Taillights | 5mm LEDs x4 + 220Ω x4 | Front lighting (D7) activates automatically via LDR. Rear taillights (A3) activate on brake/reverse. Wired in parallel. |
+| Voltage Regulator | LM2596 Step-Down | Converts Battery 1's 7.4V down to a stable 5V for all logic (MCU, sensors, LCD). |
+| Battery 1 - Logic Rail | 2x Murata US18650VTC5C in series | 7.4V, 2600 mAh, 30A. Powers L298N and LM2596 (which feeds 5V logic). |
+| Battery 2 - Traction Rail | 2x Samsung 25R 18650 in series | 7.4V, 2500 mAh, 8C. Dedicated high-current supply exclusively for the ESC. |
+| Chassis | Land Buster 1/12 scale | Physical base of the rover. |
 
-### Pin Mapping
+### Pin Mapping and Justification
 
-| MCU Pin | Role | Connected To |
-|---|---|---|
-| PD0 (RXD) | USART RX | HC-05 TX |
-| PD1 (TXD) | USART TX | HC-05 RX (via 1kΩ/2kΩ divider) |
-| PD2 | Trigger output | HC-SR04 Trigger |
-| PD4 | Echo input | HC-SR04 Echo |
-| PD6 (OC0A) | PWM output | ESC signal |
-| PB0 | Direction output | L298N IN1 |
-| PB1 | Direction output | L298N IN2 |
-| PB2 | Digital output | Active Buzzer |
-| PC0 (ADC0) | Analog input | Photoresistor divider |
-| PC4 (SDA) | I2C data | LCD PCF8574 |
-| PC5 (SCL) | I2C clock | LCD PCF8574 |
+| Arduino Pin | AVR Register | Timer / Peripheral | Connected To | Why This Pin |
+|---|---|---|---|---|
+| D0 (RX) | PD0 | USART0 RX | HC-05 TX | Hardware USART - zero-latency interrupt-driven reception (RXCIE0). No bit-banging needed. |
+| D1 (TX) | PD1 | USART0 TX | HC-05 RX via 1kΩ/2kΩ divider | Same USART peripheral. 5V output is divided to 3.3V to protect HC-05 RX logic level. |
+| D2 | PD2 | GPIO Output | HC-SR04 Front - TRIG | Any GPIO works for the 10 µs trigger pulse. D2 keeps sensor pins grouped together. |
+| D3 | PD3 | GPIO Input | HC-SR04 Front - ECHO | Paired with D2 for clean wiring. Reads echo pulse duration via pulseIn(). |
+| D4 | PD4 | GPIO Output | HC-SR04 Rear - TRIG | Same reason as D2; rear sensor pins grouped on D4/D5. |
+| D5 | PD5 | GPIO Input | HC-SR04 Rear - ECHO | Paired with D4. Mirrors front sensor logic for parking assist. |
+| D6 | PD6 | Timer 0, OC0A (Fast PWM) | L298N ENA | Only OC0A or OC0B can output Timer 0 PWM. D6 = OC0A - sets steering motor duty cycle (0–255). |
+| D7 | PD7 | GPIO Output | Headlight LEDs + 220Ω | Simple digital ON/OFF for the LED array. D7 is free from any timer to avoid conflicts. |
+| D8 | PB0 | GPIO Output | L298N IN1 | Direction bit for steering H-bridge. No special hardware needed - plain digital output. |
+| D9 | PB1 | GPIO Output | L298N IN2 | Direction bit for steering H-bridge (opposite of IN1 to select left/right). |
+| D10 | PB2 | Timer 1, OC1B (Phase-correct PWM) | ESC Signal | Timer 1 is 16-bit - essential for generating the precise 50 Hz (20 ms period) servo-style PWM the ESC requires. ICR1=39999, OCR1B range 2600–3400 for speed control. |
+| A0 | PC0 | ADC0 | LDR Voltage Divider | First ADC channel; no mux change needed for single-channel reads. Direct analog measurement of light level. |
+| A1 | PC1 | GPIO Input | HC-05 STATE | Reads hardware connection status (HIGH = connected, LOW = disconnected/searching). |
+| A2 | PC2 | GPIO Output | Active Buzzer | Moved here from SPI pins to keep PB3/PB4/PB5 free for the Xplained Mini's programming interface (EDBG). |
+| A3 | PC3 | GPIO Output | Rear LED Taillights | Dedicated pin for red rear taillights. Activates independently during AEB, reverse, or stop. |
+| A4 | PC4 | TWI SDA (Hardware I2C) | LCD PCF8574 SDA | Hardware I2C peripheral - only PC4/PC5 support hardware TWI on ATmega328P. |
+| A5 | PC5 | TWI SCL (Hardware I2C) | LCD PCF8574 SCL | Paired with A4. Hardware TWI runs at 100 kHz without CPU intervention. |
 
-### Key Design Choices
+**Note — SPI pins reserved:** PB3 (MOSI), PB4 (MISO), PB5 (SCK) are left unconnected. These are used internally by the Xplained Mini's on-board EDBG debugger for programming. Connecting peripherals to them would block firmware uploads.
 
-**Dual power rail:** The ESC and motor run directly on 7.4V from the batteries. All logic (MCU, sensors, LCD) runs on 5V from the LM2596 step-down module. This keeps motor noise away from the sensitive electronics.
+### Key Design Choices & Electrical Schematic
 
-**HC-05 voltage protection:** The HC-05 uses 3.3V logic on its RX pin. A simple resistor divider (1kΩ + 2kΩ) on the MCU TX → HC-05 RX line drops 5V down to 3.3V so the module is not damaged.
+![Land Buster Electrical Schematic](hardware/schema_cucu.png)
 
-**Two separate motor drivers:** The 390 traction motor needs high current at 7.4V, so it uses the ESC. The small steering motor runs at 3–6V and is controlled by the L298N, which is perfect for low-power direction switching.
+The electrical schematic above illustrates the complete wiring of the Land Buster rover. The hardware architecture is built upon the following core engineering rules:
 
-**Modular Hardware Implementation:** To ensure a clean and reliable hardware execution, the system utilizes a modular wiring setup consisting of male-female and female-female jumpers organized through 2-pin, 3-pin, and 5-pin connectors and terminal blocks, preventing any connections from shaking loose during rover movement.
+* **Dual Isolated Power System:** The system utilizes two separate battery packs. Battery 1 (Logic Rail) powers the L298N and the LM2596 regulator, which supplies a clean 5V to the MCU, sensors, and LCD. Battery 2 (Traction Rail) is dedicated exclusively to the high-current ESC. This isolation prevents massive voltage drops caused by the main motor from resetting the microcontroller.
+* **Common Ground:** Despite having two isolated power sources, all ground (GND) connections across the entire system are tied together. This sets a unified 0V reference point, ensuring that PWM and digital logic signals are accurately interpreted by every component.
+* **LED Parallel Wiring:** To ensure maximum brightness and protect the MCU pins, all 4 LEDs (2 front, 2 rear) are wired in parallel. Each LED connects to its respective MCU pin (D7 or A3) through its own dedicated 220Ω current-limiting resistor before returning to the common ground.
+* **HC-05 Level Shifting:** The Bluetooth module operates at 3.3V logic. To prevent hardware damage, a simple voltage divider (1kΩ in series from MCU D1, then 2kΩ to GND) safely steps down the 5V USART TX signal to ≈3.3V before it reaches the module.
+* **Timer Selection Strategy:** Timer 0 (8-bit) is used for the low-resolution steering PWM (Fast PWM, ~980 Hz). Timer 1 (16-bit) is strictly reserved for the ESC because it requires a precise 50 Hz period, which is impossible to achieve accurately with only 8 bits.
 
-### Electrical Schematic
+### Proof of Functionality & Assembly
 
-![Land Buster Electrical Schematic](hardware/electrical_schematic.png)
+**Photo 1: Power Drop Test**
+
+![Power Drop Test](poze_masinuta/poza1.jpg)
+
+This early prototype test was conducted with only the steering system and ESC connected. While running the main traction motor at a low RPM, the output of the LM2596 regulator dropped dangerously to 4.7V. This critical observation proved that a single battery configuration was insufficient to handle the high current spikes, directly justifying the upgrade to the current dual-battery (4-cell) isolated power system.
+
+**Photo 2: Full System Test**
+
+![Full System Test](poze_masinuta/poza2_cucu.jpg)
+
+All electronic components—including the ultrasonic sensors, I2C LCD, HC-05 Bluetooth module, and motor drivers—are integrated and tested together. This phase successfully verified the software integration, ensuring that the non-blocking logic, telemetry, and autonomous emergency braking (AEB) functioned simultaneously without interference, proving the system's core functionality.
+
+**Photo 3: Clean Build**
+
+![Clean Build](poze_masinuta/poza3.jpg)
+
+The final hardware assembly mounted on the Land Buster chassis. This image highlights the strict cable management and the custom mechanical modifications made to the chassis to accommodate all the new components. To ensure maximum stability, the electronics and wiring were permanently secured using high-strength adhesives (epoxy resin and cyanoacrylate).
+
+**Photo 4: Final Assembly**
+
+![Final Assembly](poze_masinuta/poza4.jpg)
+
+The completed autonomous rover with the original outer car shell successfully mounted.
 
 ---
 

@@ -33,7 +33,7 @@ The ATmega328P is the brain of the system. Everything connects to it.
   * **Processing:** The MCU reads all inputs, decides what to do (drive, stop, beep, light up), and sends signals to the outputs.
   * **Outputs:** The ESC drives the main motor (speed), the L298N drives the steering motor (direction), the LCD shows status, the buzzer gives audio alerts, and the LEDs provide lighting.
 ==== Block Diagram ====
-{{:pm:prj2026:vlad.radulescu2901:block_diagram.jpg?200|}}
+{{:pm:prj2026:vlad.radulescu2901:block_diagram.jpg?500|}}
 
 
 ===== Hardware Design =====
@@ -41,7 +41,7 @@ The ATmega328P is the brain of the system. Everything connects to it.
 ==== Components and Their Role ====
 ^ Component ^ Model ^ Role in Project ^
 | Microcontroller | ATmega328P Xplained Mini | Central brain. Reads all sensors, runs non-blocking logic, outputs PWM and I2C signals. |
-| Bluetooth Module | HC-05 | Bidirectional telemetry with Android app — receives drive commands, sends sensor data. |
+| Bluetooth Module | HC-05 | Bidirectional telemetry with Android app - receives drive commands, sends sensor data. |
 | Front Ultrasonic Sensor | HC-SR04 | Measures distance to obstacles ahead. Triggers buzzer alerts and emergency stop at <15 cm. |
 | Rear Ultrasonic Sensor | HC-SR04 | Measures distance behind the rover. Powers the reverse parking assist display on the LCD. |
 | Light Sensor | GL5528 Photoresistor + 10kΩ | Voltage divider read by ADC. Activates headlights automatically when ambient light drops. |
@@ -53,35 +53,37 @@ The ATmega328P is the brain of the system. Everything connects to it.
 | Active Buzzer | TMB12A05 5V | Proximity alert (beep rate increases near obstacles) and horn command from phone. |
 | Headlights & Taillights | 5mm LEDs x4 + 220Ω x4 | Front lighting (D7) activates automatically via LDR. Rear taillights (A3) activate on brake/reverse. Wired in parallel. |
 | Voltage Regulator | LM2596 Step-Down | Converts Battery 1's 7.4V down to a stable 5V for all logic (MCU, sensors, LCD). |
-| Battery 1 — Logic Rail | 2x Murata US18650VTC5C in series | 7.4V, 2600 mAh, 30A. Powers L298N and LM2596 (which feeds 5V logic). |
-| Battery 2 — Traction Rail | 2x Samsung 25R 18650 in series | 7.4V, 2500 mAh, 8C. Dedicated high-current supply exclusively for the ESC. |
+| Battery 1 - Logic Rail | 2x Murata US18650VTC5C in series | 7.4V, 2600 mAh, 30A. Powers L298N and LM2596 (which feeds 5V logic). |
+| Battery 2 - Traction Rail | 2x Samsung 25R 18650 in series | 7.4V, 2500 mAh, 8C. Dedicated high-current supply exclusively for the ESC. |
 | Chassis | Land Buster 1/12 scale | Physical base of the rover. |
-| Connectors | JST 2/3/5-pin + terminal blocks | Modular wiring — prevents connections loosening during movement. |
+
 
 ==== Pin Mapping and Justification ====
 ^ Arduino Pin ^ AVR Register ^ Timer / Peripheral ^ Connected To ^ Why This Pin ^
-| D0 (RX) | PD0 | USART0 RX | HC-05 TX | Hardware USART — zero-latency interrupt-driven reception (RXCIE0). No bit-banging needed. |
+| D0 (RX) | PD0 | USART0 RX | HC-05 TX | Hardware USART - zero-latency interrupt-driven reception (RXCIE0). No bit-banging needed. |
 | D1 (TX) | PD1 | USART0 TX | HC-05 RX via 1kΩ/2kΩ divider | Same USART peripheral. 5V output is divided to 3.3V to protect HC-05 RX logic level. |
-| D2 | PD2 | GPIO Output | HC-SR04 Front — TRIG | Any GPIO works for the 10 µs trigger pulse. D2 keeps sensor pins grouped together. |
-| D3 | PD3 | GPIO Input | HC-SR04 Front — ECHO | Paired with D2 for clean wiring. Reads echo pulse duration via pulseIn(). |
-| D4 | PD4 | GPIO Output | HC-SR04 Rear — TRIG | Same reason as D2; rear sensor pins grouped on D4/D5. |
-| D5 | PD5 | GPIO Input | HC-SR04 Rear — ECHO | Paired with D4. Mirrors front sensor logic for parking assist. |
-| D6 | PD6 | Timer 0, OC0A (Fast PWM) | L298N ENA | Only OC0A or OC0B can output Timer 0 PWM. D6 = OC0A — sets steering motor duty cycle (0–255). |
+| D2 | PD2 | GPIO Output | HC-SR04 Front - TRIG | Any GPIO works for the 10 µs trigger pulse. D2 keeps sensor pins grouped together. |
+| D3 | PD3 | GPIO Input | HC-SR04 Front - ECHO | Paired with D2 for clean wiring. Reads echo pulse duration via pulseIn(). |
+| D4 | PD4 | GPIO Output | HC-SR04 Rear - TRIG | Same reason as D2; rear sensor pins grouped on D4/D5. |
+| D5 | PD5 | GPIO Input | HC-SR04 Rear - ECHO | Paired with D4. Mirrors front sensor logic for parking assist. |
+| D6 | PD6 | Timer 0, OC0A (Fast PWM) | L298N ENA | Only OC0A or OC0B can output Timer 0 PWM. D6 = OC0A - sets steering motor duty cycle (0–255). |
 | D7 | PD7 | GPIO Output | Headlight LEDs + 220Ω | Simple digital ON/OFF for the LED array. D7 is free from any timer to avoid conflicts. |
-| D8 | PB0 | GPIO Output | L298N IN1 | Direction bit for steering H-bridge. No special hardware needed — plain digital output. |
+| D8 | PB0 | GPIO Output | L298N IN1 | Direction bit for steering H-bridge. No special hardware needed - plain digital output. |
 | D9 | PB1 | GPIO Output | L298N IN2 | Direction bit for steering H-bridge (opposite of IN1 to select left/right). |
-| D10 | PB2 | Timer 1, OC1B (Phase-correct PWM) | ESC Signal | Timer 1 is 16-bit — essential for generating the precise 50 Hz (20 ms period) servo-style PWM the ESC requires. ICR1=39999, OCR1B range 2600–3400 for speed control. |
+| D10 | PB2 | Timer 1, OC1B (Phase-correct PWM) | ESC Signal | Timer 1 is 16-bit - essential for generating the precise 50 Hz (20 ms period) servo-style PWM the ESC requires. ICR1=39999, OCR1B range 2600–3400 for speed control. |
 | A0 | PC0 | ADC0 | LDR Voltage Divider | First ADC channel; no mux change needed for single-channel reads. Direct analog measurement of light level. |
 | A1 | PC1 | GPIO Input | HC-05 STATE | Reads hardware connection status (HIGH = connected, LOW = disconnected/searching). |
 | A2 | PC2 | GPIO Output | Active Buzzer | Moved here from SPI pins to keep PB3/PB4/PB5 free for the Xplained Mini's programming interface (EDBG). |
 | A3 | PC3 | GPIO Output | Rear LED Taillights | Dedicated pin for red rear taillights. Activates independently during AEB, reverse, or stop. |
-| A4 | PC4 | TWI SDA (Hardware I2C) | LCD PCF8574 SDA | Hardware I2C peripheral — only PC4/PC5 support hardware TWI on ATmega328P. |
+| A4 | PC4 | TWI SDA (Hardware I2C) | LCD PCF8574 SDA | Hardware I2C peripheral - only PC4/PC5 support hardware TWI on ATmega328P. |
 | A5 | PC5 | TWI SCL (Hardware I2C) | LCD PCF8574 SCL | Paired with A4. Hardware TWI runs at 100 kHz without CPU intervention. |
 
-**Note — SPI pins reserved:** PB3 (MOSI), PB4 (MISO), PB5 (SCK) are left unconnected. These are used internally by the Xplained Mini's on-board EDBG debugger for programming. Connecting peripherals to them would block firmware uploads.
 
 ==== Key Design Choices & Electrical Schematic ====
-{{:pm:prj2026:cucu.viorel-cosmin334ca:electrical_schematic.png?700|}}
+{{:pm:prj2026:vlad.radulescu2901:cica_schema_cucu.jpg?650|}}
+
+
+{{:pm:prj2026:vlad.radulescu2901:kicad_cucu.pdf|}}
 
 The electrical schematic above illustrates the complete wiring of the Land Buster rover. The hardware architecture is built upon the following core engineering rules:
 
@@ -93,22 +95,33 @@ The electrical schematic above illustrates the complete wiring of the Land Buste
 
 ==== Proof of Functionality & Assembly ====
 
-{{:pm:prj2026:cucu.viorel-cosmin334ca:poza1.jpg?400|Power Drop Test}}
-**Photo 1: Power Drop Test**\\\\
+**Photo 1: Power Drop Test**
+
+{{:pm:prj2026:vlad.radulescu2901:poza1_cucu.jpg?400|}}
+
 This early prototype test was conducted with only the steering system and ESC connected. While running the main traction motor at a low RPM, the output of the LM2596 regulator dropped dangerously to 4.7V. This critical observation proved that a single battery configuration was insufficient to handle the high current spikes, directly justifying the upgrade to the current dual-battery (4-cell) isolated power system.
 
-{{:pm:prj2026:cucu.viorel-cosmin334ca:poza2.jpg?400|Full System Test}}
-**Photo 2: Full System Test**\\\\
-All electronic components—including the ultrasonic sensors, I2C LCD, HC-05 Bluetooth module, and motor drivers—are integrated and tested together. This phase successfully verified the software integration, ensuring that the non-blocking logic, telemetry, and autonomous emergency braking (AEB) functioned simultaneously without interference, proving the system's core functionality.
+**Photo 2: Full System Test**
 
-{{:pm:prj2026:cucu.viorel-cosmin334ca:poza3.jpg?400|Clean Build}}
-**Photo 3: Clean Build**\\\\
-The final hardware assembly mounted on the Land Buster chassis. This image highlights the strict cable management and the use of modular JST connectors. This robust wiring approach prevents connections from vibrating loose during physical operation, ensuring high reliability on the move.
+{{:pm:prj2026:vlad.radulescu2901:poza2_cuculet.jpg?400|}}
 
-{{:pm:prj2026:cucu.viorel-cosmin334ca:poza4.jpg?400|Final Assembly}}
-**Photo 4: Final Assembly**\\\\
-The completed autonomous rover with the original outer car shell successfully mounted. The clean cable management allows the shell to fit perfectly without putting pressure on the sensitive electronics or jumper wires, resulting in a polished and professional final build.
 
+All electronic components-including the ultrasonic sensors, I2C LCD, HC-05 Bluetooth module, and motor drivers-are integrated and tested together. This phase successfully verified the software integration, ensuring that the non-blocking logic, telemetry, and autonomous emergency braking (AEB) functioned simultaneously without interference, proving the system's core functionality.
+
+
+**Photo 3: Clean Build**
+
+{{:pm:prj2026:vlad.radulescu2901:poza3_cucu.jpg?400|}}
+
+The final hardware assembly mounted on the Land Buster chassis. This image highlights the strict cable management and the custom mechanical modifications made to the chassis to accommodate all the new components. To ensure maximum stability, the electronics and wiring were permanently secured using high-strength adhesives (epoxy resin and cyanoacrylate).
+
+
+
+**Photo 4: Final Assembly**
+
+{{:pm:prj2026:vlad.radulescu2901:poza4_cucu.jpg?400|}}
+
+The completed autonomous rover with the original outer car shell successfully mounted.
 
 ===== Software Design =====
 
@@ -222,34 +235,6 @@ uint16_t myAnalogRead(uint8_t channel) {
 🔄 **In progress.** TWI hardware used at 100kHz. Registers: ''TWBR'', ''TWSR'', ''TWCR'', ''TWDR''. LCD will show speed mode and distance.
 
 
-==== Metrics & Targets ====
-^ What ^ Target ^ How ^
-| Command response time | < 100 ms | Oscilloscope: BT RX → PWM change |
-| Distance accuracy | ±1 cm | Compare to ruler |
-| Emergency brake | 100% at ≤ 15 cm | 20 test runs |
-| LCD update rate | ≥ 5 Hz | Count I2C calls/second |
-| Headlight response | < 200 ms | Cover/uncover sensor, time LED toggle |
-
-==== Key Features ====
-  - **Collision prevention:** Progressive buzzer + automatic emergency brake at 15cm.
-  - **Adaptive lighting:** Headlights react to environment automatically.
-
-**Planned extra:** Rear HC-SR04 for reverse parking assist.
-
-
-===== Obtained Results =====
-
-^ Feature ^ Status ^
-| Bluetooth command reception | Tested |
-| ADC light reading | Tested |
-| Ultrasonic distance | Tested |
-| PWM steering (L298N) | In progress |
-| Speed modes via ESC | In progress |
-| Progressive buzzer | In progress |
-| Emergency brake at 15cm | In progress |
-| I2C LCD telemetry | In progress |
-| Automatic headlights | In progress |
-
 
 ===== Conclusions =====
 
@@ -266,24 +251,6 @@ All project files (C sources, Makefile / PlatformIO config, and schematics) are 
 [[https://github.com/cuculetz11/PROIECT_PM_MASINUTA|PROIECT_PM_MASINUTA GitHub]]
 
 
-===== Milestone Log =====
-<code>
-Task                              W1  W2  W3  W4  W5  W6  W7  W8  W9
-──────────────────────────────────────────────────────────────────────
-Planning & chassis setup          xxx xxx
-Validate USART, ADC, Ultrasonic           xxx xxx
-PWM speed & steering control                      xxx xxx
-I2C LCD + emergency brake logic                           xxx xxx
-Final assembly & testing                                          xxx
-</code>
-
-^ Phase ^ Weeks ^ Goal ^
-| Planning & chassis setup | W1-W2 | Component list, schematic, chassis |
-| Validate peripherals | W3-W4 | USART, ADC, Ultrasonic confirmed working |
-| PWM control | W5-W6 | 3 speed modes, steering working |
-| I2C & safety logic | W7-W8 | LCD + emergency brake at 15cm |
-| Final assembly | W9 | Clean wiring, all metrics measured |
-
 
 ===== Bibliography and Resources =====
 
@@ -298,7 +265,6 @@ Final assembly & testing                                          xxx
 
 ==== Tools ====
   * **PlatformIO + VS Code**: Writing and uploading firmware
-  * **avr-gcc + avr-size**: Compiling and checking memory
   * **Serial Bluetooth Terminal (Android)**: Sending commands from phone
 
 <html><a class="media mediafile mf_pdf" href="?do=export_pdf">Export to PDF</a></html>
